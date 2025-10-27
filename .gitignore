@@ -1,22 +1,52 @@
-# Python virtual environment
-venv/
-
-# Python cache
+# =====================
+# Python general ignore
+# =====================
 __pycache__/
 *.py[cod]
+*$py.class
+*.pyo
+*.pyd
+*.pdb
 
-# Django database
+# =====================
+# Virtual Environment
+# =====================
+venv/
+env/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# =====================
+# Django specific
+# =====================
+*.log
 db.sqlite3
-
-# Environment variables
+media/
+staticfiles/
+static/
+local_settings.py
 .env
 
-# VS Code settings
+# =====================
+# VSCode / IDE files
+# =====================
 .vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
 
-# Logs
-*.log
+# =====================
+# System / OS files
+# =====================
+.DS_Store
+Thumbs.db
+desktop.ini
 
-# Static and media files (optional, if generated)
-staticfiles/
-media/
+# =====================
+# PyInstaller
+# =====================
+build/
+dist/
+*.spec
