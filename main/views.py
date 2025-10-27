@@ -1,31 +1,32 @@
-from django.shortcuts import render, get_object_or_404, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .models import Employee
 from .forms import EmployeeForm
 
-# ---------------- List View ----------------
+# 🔹 Combined View
 def employee_list(request):
-    employees = Employee.objects.all()  # fetch all employees
-    return render(request, 'list.html', {'employees': employees})
+    employees = Employee.objects.all()
 
-# ---------------- Add View ----------------
-def add_employee(request):
     if request.method == 'POST':
-        form = EmployeeForm(request.POST)
+        # handle Add Employee (modal)
+        form = EmployeeForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('employee_list')  # reload table after adding
+            return redirect('employee_list')
     else:
         form = EmployeeForm()
-    return render(request, 'add.html', {'form': form})
 
-# ---------------- Edit View ----------------
+    return render(request, 'list.html', {'employees': employees, 'form': form})
+
+
+# 🔹 Edit Employee (called by edit modal form)
 def edit_employee(request, id):
-    employee = get_object_or_404(Employee, id=id)
+    emp = get_object_or_404(Employee, id=id)
     if request.method == 'POST':
-        form = EmployeeForm(request.POST, instance=employee)
-        if form.is_valid():
-            form.save()
-            return redirect('employee_list')  # reload table after editing
-    else:
-        form = EmployeeForm(instance=employee)
-    return render(request, 'edit.html', {'form': form})
+        emp.name = request.POST.get('name')
+        emp.position = request.POST.get('position')
+        emp.salary = request.POST.get('salary')
+        if 'image' in request.FILES:  # only if user uploaded new image
+            emp.image = request.FILES['image']
+
+        emp.save()
+        return redirect('employee_list')
