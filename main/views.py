@@ -1,8 +1,17 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from .models import Employee
 from .forms import EmployeeForm
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_view(request):
+    # Render your existing template if user authenticated
+    return render(request, 'list.html')
 # 🔹 Combined View
+
 def employee_list(request):
     employees = Employee.objects.all()
 
