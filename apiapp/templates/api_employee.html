@@ -9,9 +9,9 @@
 <div class="container mt-5">
     <h2 class="text-center mb-4">Employee Management (API View)</h2>
 
-    <!-- Add Employee Form -->
+    <!-- Add/Edit Employee Form -->
     <div class="card bg-secondary p-3 mb-4">
-        <h5>Add Employee</h5>
+        <h5 id="formTitle">Add Employee</h5>
         <div class="row g-2">
             <div class="col-md-3"><input id="name" class="form-control" placeholder="Name"></div>
             <div class="col-md-3"><input id="position" class="form-control" placeholder="Position"></div>
@@ -20,7 +20,7 @@
                 <input id="image" class="form-control" type="file">
             </div>
         </div>
-        <button onclick="addEmployee()" class="btn btn-success mt-3 w-100">Add Employee</button>
+        <button id="submitBtn" onclick="addOrUpdateEmployee()" class="btn btn-success mt-3 w-100">Add Employee</button>
     </div>
 
     <!-- Employee List Table -->
@@ -41,6 +41,7 @@
 
 <script>
 const baseURL = '/apiapp/employees/';
+let editId = null;  // 🧠 To know whether we're editing or adding
 
 // ✅ Load all employees
 function loadEmployees() {
@@ -67,8 +68,8 @@ function loadEmployees() {
         });
 }
 
-// ✅ Add Employee
-function addEmployee() {
+// ✅ Add or Update Employee
+function addOrUpdateEmployee() {
     const formData = new FormData();
     formData.append('name', document.getElementById('name').value);
     formData.append('position', document.getElementById('position').value);
@@ -76,19 +77,36 @@ function addEmployee() {
     const imageFile = document.getElementById('image').files[0];
     if (imageFile) formData.append('image', imageFile);
 
-    fetch(baseURL, {
-        method: 'POST',
-        body: formData
-    })
+    let url = baseURL;
+    let method = 'POST';
+    let successMsg = 'Employee added!';
+
+    // 🔁 If editing
+    if (editId) {
+        url = baseURL + editId + '/';
+        method = 'PUT';
+        successMsg = 'Employee updated!';
+    }
+
+    fetch(url, { method: method, body: formData })
     .then(res => res.json())
     .then(data => {
-        alert('Employee added!');
+        alert(successMsg);
+        resetForm();
         loadEmployees();
-        document.getElementById('name').value = '';
-        document.getElementById('position').value = '';
-        document.getElementById('salary').value = '';
-        document.getElementById('image').value = '';
     });
+}
+
+// 🟡 Reset form after add/update
+function resetForm() {
+    document.getElementById('name').value = '';
+    document.getElementById('position').value = '';
+    document.getElementById('salary').value = '';
+    document.getElementById('image').value = '';
+    document.getElementById('formTitle').innerText = 'Add Employee';
+    document.getElementById('submitBtn').innerText = 'Add Employee';
+    document.getElementById('submitBtn').classList.replace('btn-warning', 'btn-success');
+    editId = null;
 }
 
 // ✅ Delete Employee
@@ -106,27 +124,23 @@ function deleteEmployee(id) {
     }
 }
 
-// ✅ Edit Employee (prompt-based simple edit)
+// ✅ Edit Employee — fills form instead of prompt
 function editEmployee(id) {
-    const newName = prompt("Enter new name:");
-    const newPosition = prompt("Enter new position:");
-    const newSalary = prompt("Enter new salary:");
-
-    const updatedData = { name: newName, position: newPosition, salary: newSalary };
-
-    fetch(baseURL + id + '/', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updatedData)
-    })
+    fetch(baseURL + id + '/')
     .then(res => res.json())
-    .then(data => {
-        alert('Updated successfully!');
-        loadEmployees();
+    .then(emp => {
+        document.getElementById('name').value = emp.name;
+        document.getElementById('position').value = emp.position;
+        document.getElementById('salary').value = emp.salary;
+        document.getElementById('image').value = '';  // can’t prefill file input
+        editId = id;  // mark which employee we’re editing
+        document.getElementById('formTitle').innerText = 'Edit Employee';
+        document.getElementById('submitBtn').innerText = 'Update Employee';
+        document.getElementById('submitBtn').classList.replace('btn-success', 'btn-warning');
     });
 }
 
-// Load on page start
+// Load employees when page opens
 loadEmployees();
 </script>
 
